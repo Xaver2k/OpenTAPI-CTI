@@ -45,7 +45,7 @@ HMODULE module{};
 thread poller;
 atomic<bool> stopping{false};
 wstring token;
-const wstring title=L"Frapuri CTI";
+const wstring title=L"OpenTapiCti";
 DWORD_PTR key(HDRVCALL c){return reinterpret_cast<DWORD_PTR>(c);}
 HDRVLINE device(){return reinterpret_cast<HDRVLINE>(1);}
 template<class T> bool setup(T* p) {
@@ -79,7 +79,7 @@ string mac(const string& data) {
     return status<0?string():hexBytes(digest,sizeof(digest));
 }
 bool exchangeHttp(bool dial,const string& num,string& response) {
-    Internet s{WinHttpOpen(L"FrapuriCTI/1",WINHTTP_ACCESS_TYPE_NO_PROXY,nullptr,nullptr,0)};
+    Internet s{WinHttpOpen(L"OpenTapiCti/1",WINHTTP_ACCESS_TYPE_NO_PROXY,nullptr,nullptr,0)};
     if(!s.h)return false;
     WinHttpSetTimeouts(s.h,1000,1000,1500,dial?12000:4500);
     Internet c{WinHttpConnect(s.h,L"127.0.0.1",18763,0)};if(!c.h)return false;
@@ -169,7 +169,7 @@ LONG TSPIAPI TSPI_providerEnumDevices(DWORD,LPDWORD lines,LPDWORD phones,HPROVID
 LONG TSPIAPI TSPI_lineNegotiateTSPIVersion(DWORD,DWORD low,DWORD high,LPDWORD out){if(low>0x20000||high<0x20000)return LINEERR_INCOMPATIBLEAPIVERSION;*out=0x20000;return 0;}
 LONG TSPIAPI TSPI_providerInit(DWORD,DWORD perm,DWORD base,DWORD,DWORD_PTR,DWORD_PTR,ASYNC_COMPLETION complete,LPDWORD options){
  wchar_t value[64]{};DWORD len=sizeof(value);
- if(RegGetValueW(HKEY_LOCAL_MACHINE,L"SOFTWARE\\Frapuri\\CTIPilot",L"LocalToken",RRF_RT_REG_SZ,nullptr,value,&len)!=ERROR_SUCCESS || wcslen(value)!=48)return LINEERR_INIFILECORRUPT;
+ if(RegGetValueW(HKEY_LOCAL_MACHINE,L"SOFTWARE\\OpenTapiCti",L"LocalToken",RRF_RT_REG_SZ,nullptr,value,&len)!=ERROR_SUCCESS || wcslen(value)!=48)return LINEERR_INIFILECORRUPT;
  providerId=perm;baseId=base;completed=complete;token=value;*options=0;stopping=false;
  try {poller=thread(process);}catch(...){return LINEERR_NOMEM;}return 0;
 }

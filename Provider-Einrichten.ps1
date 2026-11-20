@@ -1,14 +1,14 @@
 ﻿#Requires -RunAsAdministrator
 [CmdletBinding(SupportsShouldProcess,ConfirmImpact='High')]
-param([string]$AdapterKonfiguration = "$env:LOCALAPPDATA\FrapuriCTI\adapter.json")
+param([string]$AdapterKonfiguration = "$env:LOCALAPPDATA\OpenTapiCti\adapter.json")
 $ErrorActionPreference='Stop'
 if (![Environment]::Is64BitProcess) { throw '64-Bit-PowerShell verwenden.' }
-$source=Join-Path $PSScriptRoot 'FrapuriCTI.tsp'
+$source=Join-Path $PSScriptRoot 'OpenTapiCti.tsp'
 if (!(Test-Path -LiteralPath $source -PathType Leaf)) { throw 'Zuerst Quelle\Bauen.cmd in der x64-Entwicklerkonsole ausführen.' }
 $config=Get-Content -LiteralPath $AdapterKonfiguration -Raw | ConvertFrom-Json
 if ($config.lokal -cnotmatch '^[a-f0-9]{48}$') { throw 'Adapterkonfiguration ungültig.' }
-$reg='HKLM:\SOFTWARE\Frapuri\CTIPilot'
-$target=Join-Path ([Environment]::SystemDirectory) 'FrapuriCTI.tsp'
+$reg='HKLM:\SOFTWARE\OpenTapiCti'
+$target=Join-Path ([Environment]::SystemDirectory) 'OpenTapiCti.tsp'
 if ((Test-Path -LiteralPath $reg) -or (Test-Path -LiteralPath $target)) { throw 'Vorhandene Installation oder Reste gefunden. Kein Überschreiben.' }
 if (!$PSCmdlet.ShouldProcess($env:COMPUTERNAME,'Nativen Pilotanbieter in System32 kopieren und bei Windows-TAPI registrieren')) { return }
 Add-Type -TypeDefinition @'
@@ -38,7 +38,7 @@ try {
     if ($result -ne 0) { throw ('lineAddProviderW: 0x{0:X8}' -f $result) }
     $registered=$true
     New-ItemProperty -Path $reg -Name ProviderId -Value $id -PropertyType DWord | Out-Null
-    Write-Host "TAPI-Anbieter Frapuri CTI registriert (ID $id)."
+    Write-Host "TAPI-Anbieter OpenTapiCti registriert (ID $id)."
 } catch {
     if (!$registered) {
         if (Test-Path $reg) { Remove-Item -LiteralPath $reg -Recurse }

@@ -43,14 +43,14 @@ def startup(enable=None):
             if not frozen:
                 args.append(str(Path(__file__).resolve()))
             command = subprocess.list2cmdline(args + ["--minimiert"])
-            winreg.SetValueEx(key, "FrapuriCTIPilot", 0, winreg.REG_SZ, command)
+            winreg.SetValueEx(key, "OpenTapiCti", 0, winreg.REG_SZ, command)
         elif enable is False:
             try:
-                winreg.DeleteValue(key, "FrapuriCTIPilot")
+                winreg.DeleteValue(key, "OpenTapiCti")
             except FileNotFoundError:
                 pass
         try:
-            return bool(winreg.QueryValueEx(key, "FrapuriCTIPilot")[0])
+            return bool(winreg.QueryValueEx(key, "OpenTapiCti")[0])
         except FileNotFoundError:
             return False
 
@@ -83,7 +83,7 @@ def save(cfg):
 class Window:
     def __init__(self, root):
         self.root = root
-        root.title("Frapuri CTI · Arbeitsplatz")
+        root.title("OpenTapiCti · Arbeitsplatz")
         self.cfg = {}
         self.cert, self.key = "", ""
         self.mode = tk.StringVar(value=PROFILES["yealink"])

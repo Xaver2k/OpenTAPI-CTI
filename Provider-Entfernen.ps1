@@ -3,7 +3,7 @@
 param()
 $ErrorActionPreference='Stop'
 if (![Environment]::Is64BitProcess) { throw '64-Bit-PowerShell verwenden.' }
-$reg='HKLM:\SOFTWARE\Frapuri\CTIPilot'
+$reg='HKLM:\SOFTWARE\OpenTapiCti'
 $p=Get-ItemProperty -LiteralPath $reg
 if ($null -eq $p.ProviderId) { throw 'Keine gespeicherte Provider-ID. In Telefon und Modem die registrierten Anbieter prüfen.' }
 if (!$PSCmdlet.ShouldProcess($env:COMPUTERNAME,"Pilotanbieter $($p.ProviderId) aus Windows-TAPI entfernen")) { return }
@@ -36,8 +36,8 @@ public static class CtiRemove {
  }
 }
 '@
-if (![CtiRemove]::Matches($p.ProviderId,'FrapuriCTI.tsp')) { throw 'Die gespeicherte ID gehört aktuell nicht nachweislich zu FrapuriCTI.tsp.' }
+if (![CtiRemove]::Matches($p.ProviderId,'OpenTapiCti.tsp')) { throw 'Die gespeicherte ID gehört aktuell nicht nachweislich zu OpenTapiCti.tsp.' }
 $result=[CtiRemove]::lineRemoveProvider($p.ProviderId,[IntPtr]::Zero)
 if ($result -ne 0) { throw ('lineRemoveProvider: 0x{0:X8}' -f $result) }
 Remove-Item -LiteralPath $reg -Recurse
-Remove-Item -LiteralPath (Join-Path ([Environment]::SystemDirectory) 'FrapuriCTI.tsp')
+Remove-Item -LiteralPath (Join-Path ([Environment]::SystemDirectory) 'OpenTapiCti.tsp')

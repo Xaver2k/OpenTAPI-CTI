@@ -1,4 +1,4 @@
-# OpenTAPI CTI
+# OpenTapiCti
 
 Windows TAPI driver and CTI client for desk phones. Designed for applications such as THEORG to identify incoming callers and dial from patient records.
 
@@ -8,4 +8,4 @@ Hardware compatibility and end-to-end operation with THEORG require validation. 
 
 ## Windows download
 
-Open [Windows builds](../../actions/workflows/windows.yml), select a successful run and download `CTIPilot-Windows-x64` under **Artifacts**. Extract the Windows package before starting the application. The package includes the GUI, the TAPI provider and setup scripts.
+Open [Windows builds](../../actions/workflows/windows.yml), select a successful run and download `OpenTapiCti-Windows-x64` under **Artifacts**. Extract the Windows package before starting the application. The package includes the GUI, the TAPI provider and setup scripts.

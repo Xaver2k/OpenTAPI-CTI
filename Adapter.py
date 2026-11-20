@@ -16,7 +16,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, quote, urlsplit
 
-ROOT = Path(os.environ.get("LOCALAPPDATA", str(Path.home()))) / "FrapuriCTI"
+ROOT = Path(os.environ.get("LOCALAPPDATA", str(Path.home()))) / "OpenTapiCti"
 EVENTS = {"incoming_call": "in", "outgoing_call": "out",
           "call_established": "up", "call_terminated": "end", "missed_call": "end"}
 NETWORKS = tuple(map(ipaddress.ip_network, ["10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16"]))
@@ -269,7 +269,7 @@ def main():
             print(f"action_url.{key} = {event_url(cfg,event)}")
         return
     if cfg.get("zentral"):
-        p.error("Für zentrale Placetel-Wahl CTI-Start.cmd öffnen.")
+        p.error("Für zentrale Placetel-Wahl OpenTapiCti-Start.cmd öffnen.")
     a = Yealink(cfg)
     if args.modus == "wahltest":
         if not NUMBER.fullmatch(args.nummer or ""): p.error("Testziel als Ziffern oder +Ländervorwahl angeben")

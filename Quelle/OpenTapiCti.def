@@ -1,4 +1,4 @@
-LIBRARY FrapuriCTI
+LIBRARY OpenTapiCti
 EXPORTS
     TSPI_providerUIIdentify
     TUISPI_providerInstall

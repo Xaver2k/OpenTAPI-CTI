@@ -1,17 +1,18 @@
-﻿Frapuri CTI für THEORG – Bürotest
+﻿OpenTapiCti für THEORG – Bürotest
 ================================
 
 Windows-Build und Start
 ----------------------
 Für GitHub den INHALT dieses Ordners in das Stammverzeichnis des privaten
 Projekt-Repositories übernehmen. Dort müssen .github/workflows/windows.yml
-und CTIPilot.pyw liegen. Der Workflow „CTIPilot Windows x64“ läuft nach
+und OpenTapiCti.pyw liegen. Der Workflow „OpenTapiCti Windows x64“ läuft nach
 einem Push oder manuell unter Actions. Bei Erfolg das Build-Artefakt
-CTIPilot-Windows-x64 herunterladen und die darin enthaltene ZIP entpacken.
-Diesen kompletten Programmordner behalten und CTIPilot.exe öffnen. Darin
+OpenTapiCti-Windows-x64.zip herunterladen und genau einmal entpacken.
+Im entpackten Ordner liegt OpenTapiCti.exe direkt neben dem TAPI-Anbieter.
+Diesen kompletten Programmordner behalten und OpenTapiCti.exe öffnen. Darin
 sind Python und die TSP-Datei enthalten. Der Build installiert keinen Provider.
 Manuelle Registrierung siehe Abschnitt 2. Zum Test aus dem Quellpaket kann
-CTI-Start.cmd mit Python ab 3.10 inklusive Tkinter verwendet werden.
+OpenTapiCti-Start.cmd mit Python ab 3.10 inklusive Tkinter verwendet werden.
 
 Telefonprofil auswählen
 -----------------------
@@ -50,13 +51,13 @@ angeben und erneut speichern. Der folgende Abschnitt beschreibt diese Variante.
 
 Erster Start
 ------------
-1. Paket vollständig an einen dauerhaften Ort entpacken. CTIPilot.exe öffnen
-   (beim Start aus dem Quellpaket CTI-Start.cmd).
+1. Paket vollständig an einen dauerhaften Ort entpacken. OpenTapiCti.exe öffnen
+   (beim Start aus dem Quellpaket OpenTapiCti-Start.cmd).
 2. Die private IPv4-Adresse des Windows-PCs und des Tischtelefons sowie die
    Durchwahl eintragen. Speichern und starten. Vorhandene Adapter-Einstellungen
    aus dem ersten Pilot werden beim Öffnen geladen. Eine alte Adapterkonsole
    vorher schließen. Schlüssel und Konfiguration liegen im Benutzerprofil
-   unter %LOCALAPPDATA%\FrapuriCTI\adapter.json.
+   unter %LOCALAPPDATA%\OpenTapiCti\adapter.json.
 3. „Telefon einrichten“ zeigt für die einmalige Einrichtung die Yealink-Felder
    und Kopierknöpfe. Vorhandene Action URLs vor dem Ändern sichern. Die URLs
    enthalten ein Geheimnis. Auf einem verwalteten PC den Zwischenablageverlauf
@@ -106,10 +107,10 @@ Einzelarbeitsplatz, nicht für konkurrierende lokale Sitzungen ausgelegt.
 
 2. Windows-TAPI und THEORG
 --------------------------
-Beim GitHub-Artefakt liegt FrapuriCTI.tsp bereits bei. Für einen manuellen Build: Auf einem Windows-Entwicklungs-PC:
+Beim GitHub-Artefakt liegt OpenTapiCti.tsp bereits bei. Für einen manuellen Build: Auf einem Windows-Entwicklungs-PC:
 Visual Studio Build Tools mit C++ Desktop-Workload und Windows SDK verwenden,
 die „x64 Native Tools Command Prompt“ starten und Quelle\Bauen.cmd aufrufen.
-Die erzeugte FrapuriCTI.tsp gehört neben Provider-Einrichten.ps1. Dadurch braucht
+Die erzeugte OpenTapiCti.tsp gehört neben Provider-Einrichten.ps1. Dadurch braucht
 der Arbeitsplatz selbst keine C++-Entwicklungsumgebung.
 
 Die Registrierung installiert nativen Code für den Windows-Telefoniedienst.
@@ -120,9 +121,9 @@ erhöhten 64-Bit-Windows-PowerShell im Paketordner:
  .\Provider-Einrichten.ps1
 
 Bei Erhöhung mit einem anderen Administratorkonto den Pfad des Arbeitsplatzbenutzers
-mit -AdapterKonfiguration "C:\Users\BENUTZER\AppData\Local\FrapuriCTI\adapter.json" übergeben.
+mit -AdapterKonfiguration "C:\Users\BENUTZER\AppData\Local\OpenTapiCti\adapter.json" übergeben.
 Der Installer fragt vor der systemweiten Änderung. Der Adapter muss während der
-Nutzung laufen. Im THEORG-Telefonassistenten die TAPI-Leitung „Frapuri CTI“ für
+Nutzung laufen. Im THEORG-Telefonassistenten die TAPI-Leitung „OpenTapiCti“ für
 diesen Arbeitsplatz auswählen und automatische Anwahl erlauben. Der Adapter
 muss am Arbeitsplatz-PC zum Telefon im Praxisnetz erreichbar sein.
 Bei THEORG via RDP/ASP beschreibt SOVDWAER einen lokalen TAPI-Anbieter und
@@ -155,3 +156,12 @@ Sehr kurze Gespräche zwischen zwei Providerabfragen (etwa 200 ms) können fehle
 Ein fehlendes oder verspätetes Telefonereignis kann die Zuordnung verhindern.
 Pro Arbeitsplatz ist eine laufende Instanz vorgesehen. Weitere Telefonhersteller
 brauchen einen passenden Adapter.
+
+Umstieg von der früheren Testversion
+---------------------------------
+Vorhandenen TAPI-Anbieter vor dem Wechsel mit dem bisherigen
+Provider-Entfernen.ps1 entfernen. Die neue Version verwendet
+%LOCALAPPDATA%\OpenTapiCti\adapter.json. Vorhandene Einstellungen können
+bei beendetem Programm aus dem bisherigen Konfigurationsordner dorthin
+kopiert werden. Autostart im alten Fenster zuerst ausschalten und im neuen
+Fenster wieder aktivieren. Den neuen TAPI-Anbieter anschließend einrichten.
