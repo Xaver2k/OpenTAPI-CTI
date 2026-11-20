@@ -1,0 +1,157 @@
+﻿Frapuri CTI für THEORG – Bürotest
+================================
+
+Windows-Build und Start
+----------------------
+Für GitHub den INHALT dieses Ordners in das Stammverzeichnis des privaten
+Projekt-Repositories übernehmen. Dort müssen .github/workflows/windows.yml
+und CTIPilot.pyw liegen. Der Workflow „CTIPilot Windows x64“ läuft nach
+einem Push oder manuell unter Actions. Bei Erfolg das Build-Artefakt
+CTIPilot-Windows-x64 herunterladen und die darin enthaltene ZIP entpacken.
+Diesen kompletten Programmordner behalten und CTIPilot.exe öffnen. Darin
+sind Python und die TSP-Datei enthalten. Der Build installiert keinen Provider.
+Manuelle Registrierung siehe Abschnitt 2. Zum Test aus dem Quellpaket kann
+CTI-Start.cmd mit Python ab 3.10 inklusive Tkinter verwendet werden.
+
+Telefonprofil auswählen
+-----------------------
+Yealink lokal: Für T46/T54 zuerst diese Variante testen. Eigene Durchwahl,
+PC-IP und Telefon-IP eintragen. Der PC wählt direkt am Gerät und empfängt
+die Ereignisse per Action URL. Es werden keine Placetel-API-Daten benötigt.
+Yealink mit Placetel-Wahl oder snom: Dieselben drei Angaben sowie SIP-UID
+und API-Schlüssel eintragen. Ausgehend wählt Placetel, eingehend meldet
+das zugeordnete Telefon im LAN an diesen PC. Die Knöpfe unter „Telefon
+einrichten“ zeigen die passenden URLs. Beim snom muss die Firmware die
+Variable $csta_id je Gespräch sowie $remote liefern. Anrufannahme und
+Auflegen mit dem tatsächlichen Modell prüfen.
+Cisco / andere: Nur ausgehende Placetel-Wahl. SIP-UID, eigene Durchwahl und
+API-Schlüssel eintragen. Beide IP-Felder dürfen leer bleiben.
+
+Alle Profile arbeiten ohne eigenen zentralen Server und ohne Portweiterleitung.
+Bei lokaler Anruferkennung muss das Telefon die private PC-IP auf TCP 18762
+erreichen. Für einen Parallelruf gehört jeder Arbeitsplatz zu einem Telefon.
+„Erst nach Annahme“ eingeschaltet lassen. Bei unterdrückter Nummer ist keine
+Patientenzuordnung möglich.
+„Speichern und starten“ löst keinen Ruf aus. „Testanruf“ wählt tatsächlich.
+
+Die Anwendung sendet einmal POST /v2/calls über HTTPS an api.placetel.de.
+Ein Timeout kann nach erfolgreicher Vermittlung eintreten. Am Hörer prüfen,
+bevor erneut gewählt wird. Der API-Schlüssel wird benutzergebunden mit
+Windows-DPAPI gespeichert. Nur einen für diesen Test geeigneten Schlüssel
+verwenden. Ein kontoweiter Schlüssel hat auch auf einem Arbeitsplatz seine
+kontoweiten Berechtigungen. Einmal gespeichert bleibt er beim Zurückschalten
+im Benutzerprofil. Zum Widerruf den Schlüssel bei Placetel deaktivieren.
+
+Nur im Profil „Cisco / andere“ ist nur die lokale TAPI-Verbindung über Loopback aktiv.
+Es gibt keinen Empfänger im LAN oder Internet und keine Meldung eingehender
+Anrufe. Der API-Erfolg bestätigt den Auftrag, keine tatsächliche Annahme durch
+den Patienten. Zur lokalen Yealink-Variante das erste Telefonprofil wählen, IPs
+angeben und erneut speichern. Der folgende Abschnitt beschreibt diese Variante.
+
+Erster Start
+------------
+1. Paket vollständig an einen dauerhaften Ort entpacken. CTIPilot.exe öffnen
+   (beim Start aus dem Quellpaket CTI-Start.cmd).
+2. Die private IPv4-Adresse des Windows-PCs und des Tischtelefons sowie die
+   Durchwahl eintragen. Speichern und starten. Vorhandene Adapter-Einstellungen
+   aus dem ersten Pilot werden beim Öffnen geladen. Eine alte Adapterkonsole
+   vorher schließen. Schlüssel und Konfiguration liegen im Benutzerprofil
+   unter %LOCALAPPDATA%\FrapuriCTI\adapter.json.
+3. „Telefon einrichten“ zeigt für die einmalige Einrichtung die Yealink-Felder
+   und Kopierknöpfe. Vorhandene Action URLs vor dem Ändern sichern. Die URLs
+   enthalten ein Geheimnis. Auf einem verwalteten PC den Zwischenablageverlauf
+   und die Synchronisation der Zwischenablage berücksichtigen. Remote Control
+   am Telefon ausschließlich für die PC-IP zulassen.
+4. Durchwahl vom zweiten Telefon anrufen. Im Fenster erscheinen Klingeln,
+   Gespräch verbunden und Ruf beendet. Es zeigt keine Patientenrufnummer an.
+   Mit „Testanruf“ eine bekannte interne Durchwahl wählen.
+5. „Bei Windows-Anmeldung minimiert starten“ gilt für den angemeldeten Benutzer.
+   Dasselbe Häkchen entfernt den Autostart. Minimieren hält den Empfänger aktiv.
+   Beenden stoppt ihn. Wenn die Dateien verschoben wurden, Autostart neu setzen.
+
+Rufnummer an THEORG
+-------------------
+Voreinstellung: Bei einem eingehenden Ruf wartet der Adapter auf die lokale
+Gesprächsannahme für dieselbe Call-ID. Erst dann sieht der TAPI-Provider den Ruf.
+Er meldet einen neuen eingehenden Ruf mit seiner Anrufernummer, kurz danach
+den verbundenen Zustand. Bleibt eine Nebenstelle beim Parallelruf unbeantwortet,
+gibt der Adapter dort keine Rufnummer an TAPI weiter. Zum Vergleich kann man
+das Häkchen für „erst nach Annahme“ entfernen und „Speichern und starten“ wählen.
+Einstellungen nur zwischen Gesprächen ändern, da der Empfänger neu startet.
+Ob und wann THEORG den Patienten öffnet, muss in der eingesetzten THEORG-Version
+mit einem eindeutig zugeordneten Testkontakt geprüft werden.
+
+Netz und Sicherheit
+-------------------
+Der PC empfängt auf seiner privaten IP und TCP 18762. Nur die konfigurierte
+Telefon-IP und der generierte URL-Schlüssel sind zugelassen. Unter „Empfangsschutz“ ermöglicht der Pilot TLS ab Version 1.2 mit einer PEM-
+Zertifikatskette und privatem Schlüssel. Das Telefon muss HTTPS Action URLs
+unterstützen, die ausstellende CA kennen und das Zertifikat für die PC-IP
+prüfen. Den Schlüssel per Windows-ACL schützen. Nach Protokoll- oder IP-
+Wechsel die URLs erneut ins Telefon kopieren. Ohne Zertifikat verlangt der
+Pilot beim ersten Speichern eine Bestätigung für HTTP. Damit stehen Nummer und
+Schlüssel im Klartext. HTTP nur mit Testnummern im abgeschotteten Netz nutzen. Bei einer
+erforderlichen Windows-Firewallregel den Empfang auf genau diese beiden IPs,
+den Port und das passende Windows-Netzwerkprofil beschränken. Keine öffentliche
+Portweiterleitung. Das Programm ändert weder Firewall noch Telefon automatisch.
+Für die Fernwahl zum Telefon wird standardmäßig HTTPS mit Zertifikatsprüfung
+verwendet. Das Zertifikat muss zur Telefon-IP passen und am PC vertrauenswürdig
+sein. Die HTTP-Option betrifft nur die Fernwahl.
+Die interne TAPI-Verbindung nutzt 127.0.0.1:18763, HMAC-SHA256 und einen
+einmaligen zeitlich begrenzten Anforderungswert. Telefonereignisse und Anfragen
+laufen im Speicher. Es gibt keine Anrufliste auf der Festplatte. Die Konfiguration
+enthält Steuergeheimnisse. Nur dem vorgesehenen Windows-Benutzer und zuständigen
+Administratoren Zugriff geben. Die Lösung ist für einen vertrauenswürdigen
+Einzelarbeitsplatz, nicht für konkurrierende lokale Sitzungen ausgelegt.
+
+2. Windows-TAPI und THEORG
+--------------------------
+Beim GitHub-Artefakt liegt FrapuriCTI.tsp bereits bei. Für einen manuellen Build: Auf einem Windows-Entwicklungs-PC:
+Visual Studio Build Tools mit C++ Desktop-Workload und Windows SDK verwenden,
+die „x64 Native Tools Command Prompt“ starten und Quelle\Bauen.cmd aufrufen.
+Die erzeugte FrapuriCTI.tsp gehört neben Provider-Einrichten.ps1. Dadurch braucht
+der Arbeitsplatz selbst keine C++-Entwicklungsumgebung.
+
+Die Registrierung installiert nativen Code für den Windows-Telefoniedienst.
+Ein Treiberfehler kann die Telefonie weiterer Programme auf diesem PC stören.
+Nur im Büro-Pilot durchführen, wenn der Adaptertest erfolgreich war. In einer
+erhöhten 64-Bit-Windows-PowerShell im Paketordner:
+
+ .\Provider-Einrichten.ps1
+
+Bei Erhöhung mit einem anderen Administratorkonto den Pfad des Arbeitsplatzbenutzers
+mit -AdapterKonfiguration "C:\Users\BENUTZER\AppData\Local\FrapuriCTI\adapter.json" übergeben.
+Der Installer fragt vor der systemweiten Änderung. Der Adapter muss während der
+Nutzung laufen. Im THEORG-Telefonassistenten die TAPI-Leitung „Frapuri CTI“ für
+diesen Arbeitsplatz auswählen und automatische Anwahl erlauben. Der Adapter
+muss am Arbeitsplatz-PC zum Telefon im Praxisnetz erreichbar sein.
+Bei THEORG via RDP/ASP beschreibt SOVDWAER einen lokalen TAPI-Anbieter und
+den lokalen Telefonassistenten im Client-Modus. Auf dem Server wird „RDP-Gerät“
+gewählt. Voraussetzungen der Herstelleranleitung: THEORG ab 10.49 und Lizenz
+„Schnittstelle Telefon/Telefonanlage“. Link:
+https://sovdwaer.de/files/hardwareempfehlungen/Anleitungen/SGN%203.261.1_TAPI_Einrichtung.pdf
+
+
+Büroabnahme und Rücknahme
+------------------------
+Zwei Arbeitsplatz-PCs mit je einem eigenen Telefon konfigurieren. Für den
+Abnahmetest die Zentrale zweimal anrufen, einmal an A und einmal an B abheben.
+Der Testkontakt soll jeweils nur am annehmenden Platz erscheinen. Danach einen
+Ruf vor der Annahme abbrechen, einen anonymen Anruf und die Wahl aus dem
+Patientendatensatz testen. Bei unterdrückter Nummer darf kein Patient zugeordnet
+werden. Ohne TAPI-Anbieter kann bereits mit dem Fenster die Telefonanbindung
+geprüft werden. Ein bereits installierter Provider aus dem früheren Piloten muss
+für diese Version entfernt und nach dem Neubau erneut eingerichtet werden.
+Die neue lokale Schnittstelle ist mit der alten Providerdatei inkompatibel.
+
+Rücknahme: Autostart im Fenster ausschalten, GUI beenden, alte Telefoneinstellungen
+wiederherstellen und eine eigens angelegte Firewallregel entfernen. Für einen
+installierten Pilotanbieter dient Provider-Entfernen.ps1 (erhöhte x64-PowerShell).
+Das Entfernen unterbricht die CTI-Verbindung. Vorher THEORG-Telefonassistent schließen.
+
+Testgrenzen: Adapter und Parallelruf wurden mit simulierten Ereignissen getestet.
+Ein funktionierender TAPI-Provider ist für THEORG erforderlich. Der Quelltext und ein Build-Workflow liegen bei. Die Prüfung mit Windows, THEORG und echten Geräten steht aus.
+Sehr kurze Gespräche zwischen zwei Providerabfragen (etwa 200 ms) können fehlen.
+Ein fehlendes oder verspätetes Telefonereignis kann die Zuordnung verhindern.
+Pro Arbeitsplatz ist eine laufende Instanz vorgesehen. Weitere Telefonhersteller
+brauchen einen passenden Adapter.

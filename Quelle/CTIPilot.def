@@ -1,0 +1,23 @@
+LIBRARY FrapuriCTI
+EXPORTS
+    TSPI_providerUIIdentify
+    TUISPI_providerInstall
+    TUISPI_providerRemove
+    TSPI_providerEnumDevices
+    TSPI_lineNegotiateTSPIVersion
+    TSPI_providerInit
+    TSPI_providerShutdown
+    TSPI_lineGetDevCaps
+    TSPI_lineGetAddressCaps
+    TSPI_lineOpen
+    TSPI_lineClose
+    TSPI_lineSetDefaultMediaDetection
+    TSPI_lineSetStatusMessages
+    TSPI_lineGetNumAddressIDs
+    TSPI_lineGetAddressStatus
+    TSPI_lineGetLineDevStatus
+    TSPI_lineMakeCall
+    TSPI_lineCloseCall
+    TSPI_lineGetCallAddressID
+    TSPI_lineGetCallStatus
+    TSPI_lineGetCallInfo
