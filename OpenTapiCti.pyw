@@ -84,6 +84,11 @@ class Window:
     def __init__(self, root):
         self.root = root
         root.title("OpenTapiCti · Arbeitsplatz")
+        assets = Path(__file__).resolve().parent / "assets"
+        self.window_icon = tk.PhotoImage(file=str(assets / "OpenTapiCti.png"))
+        root.iconphoto(True, self.window_icon)
+        if sys.platform == "win32":
+            root.iconbitmap(str(assets / "OpenTapiCti.ico"))
         self.cfg = {}
         self.cert, self.key = "", ""
         self.mode = tk.StringVar(value=PROFILES["yealink"])

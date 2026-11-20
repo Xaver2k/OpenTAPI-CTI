@@ -23,9 +23,15 @@ jobs:
         run: |
           python -m pip install pyinstaller==6.16.0
           if ($LASTEXITCODE) { exit $LASTEXITCODE }
-          python -m PyInstaller --noconfirm --onedir --windowed --name OpenTapiCti OpenTapiCti.pyw
+          python -m PyInstaller --noconfirm --onedir --windowed --name OpenTapiCti --icon assets/OpenTapiCti.ico --add-data "assets;assets" OpenTapiCti.pyw
           if ($LASTEXITCODE) { exit $LASTEXITCODE }
           Copy-Item OpenTapiCti.tsp,Provider-Einrichten.ps1,Provider-Entfernen.ps1,Anleitung.txt dist/OpenTapiCti
+      - name: Paketstruktur prüfen
+        shell: pwsh
+        run: |
+          if (!(Test-Path dist/OpenTapiCti/OpenTapiCti.exe)) { throw "EXE fehlt" }
+          if (!(Test-Path dist/OpenTapiCti/OpenTapiCti.tsp)) { throw "TAPI-Anbieter fehlt" }
+          if (Get-ChildItem dist/OpenTapiCti -Recurse -Filter *.zip) { throw "Verschachtelte ZIP gefunden" }
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: OpenTapiCti-Windows-x64
