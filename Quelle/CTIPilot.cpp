@@ -1,7 +1,7 @@
 // Native Windows x64 TAPI service provider. One line per workstation.
 #define WIN32_LEAN_AND_MEAN
 #define TAPI_CURRENT_VERSION 0x00020000
-#define TAPI_NO_DATA_EXTENSIONS
+#define TAPI_NO_DATA_EXTENSIONS 1
 #include <windows.h>
 #include <tapi.h>
 #include <tspi.h>
