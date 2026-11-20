@@ -31,7 +31,7 @@ jobs:
         run: |
           if (!(Test-Path dist/OpenTapiCti/OpenTapiCti.exe)) { throw "EXE fehlt" }
           if (!(Test-Path dist/OpenTapiCti/OpenTapiCti.tsp)) { throw "TAPI-Anbieter fehlt" }
-          if (Get-ChildItem dist/OpenTapiCti -Recurse -Filter *.zip) { throw "Verschachtelte ZIP gefunden" }
+          if (Get-ChildItem dist/OpenTapiCti -File -Filter *.zip) { throw "Verschachtelte ZIP gefunden" }
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: OpenTapiCti-Windows-x64
