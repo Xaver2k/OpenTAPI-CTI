@@ -13,6 +13,7 @@ import threading
 import time
 import tkinter as tk
 from tkinter import ttk, messagebox, simpledialog, filedialog
+from Network import local_addresses
 from Placetel import PlacetelDial, check_token, windows_secret
 from Adapter import Calls, EVENTS, NUMBER, ROOT, Server, Yealink, dial_number, handler, private_ip, event_url, event_tls
 
@@ -98,6 +99,9 @@ class Window:
         self.events = queue.Queue(maxsize=64)
         self.status = tk.StringVar(value="Bitte Arbeitsplatz einrichten.")
         self.pc, self.phone, self.ext = (tk.StringVar() for _ in range(3))
+        self.pc_choices = {}
+        self.address_updates = queue.Queue()
+        self.address_scanning = False
         self.after = tk.BooleanVar(value=True)
         self.http = tk.BooleanVar()
         self.auto = tk.BooleanVar()
@@ -106,7 +110,15 @@ class Window:
         outer.columnconfigure(1, weight=1)
         for i,(name,var) in enumerate([("IP dieses PCs", self.pc), ("IP des Tischtelefons",self.phone),("Eigene Durchwahl",self.ext)]):
             ttk.Label(outer,text=name).grid(row=i,column=0,sticky="w",padx=(0,12),pady=4)
-            ttk.Entry(outer,textvariable=var,width=28).grid(row=i,column=1,sticky="ew")
+            if var is self.pc:
+                row = ttk.Frame(outer)
+                row.grid(row=i,column=1,sticky="ew")
+                row.columnconfigure(0,weight=1)
+                self.pc_box = ttk.Combobox(row,textvariable=var,width=28)
+                self.pc_box.grid(row=0,column=0,sticky="ew")
+                ttk.Button(row,text="Aktualisieren",command=self.scan_addresses).grid(row=0,column=1,padx=(5,0))
+            else:
+                ttk.Entry(outer,textvariable=var,width=28).grid(row=i,column=1,sticky="ew")
         for row,text,var,fn in [(3,"Eingehende Anrufe erst nach Annahme an THEORG melden",self.after,None),
                                 (4,"Fernwahl per HTTP erlauben (unverschlüsselt)",self.http,None),
                                 (5,"Bei Windows-Anmeldung minimiert starten",self.auto,self.set_auto)]:
@@ -137,14 +149,42 @@ class Window:
                 self.start(self.cfg)
                 if "--minimiert" in sys.argv:
                     root.after(150,root.iconify)
-            else:
-                addresses = [ip for ip in socket.gethostbyname_ex(socket.gethostname())[2] if ip.startswith(("192.168.","10."))]
-                if len(addresses)==1:
-                    self.pc.set(addresses[0])
+
         except Exception as exc:
             self.status.set("Start fehlgeschlagen. " + str(exc))
+        self.scan_addresses()
         root.protocol("WM_DELETE_WINDOW",self.close)
         root.after(200,self.refresh)
+
+    def scan_addresses(self):
+        if self.address_scanning:
+            return
+        self.address_scanning = True
+        def scan():
+            try:
+                self.address_updates.put((local_addresses(), None))
+            except (OSError, ValueError, subprocess.SubprocessError):
+                self.address_updates.put(([], "IP-Erkennung fehlgeschlagen. IP manuell eintragen oder Aktualisieren wählen."))
+        threading.Thread(target=scan,daemon=True).start()
+
+    def receive_addresses(self, addresses, error):
+        self.address_scanning = False
+        current = self.pc_choices.get(self.pc.get(), self.pc.get().strip())
+        self.pc_choices = {f"{ip} · {name}": ip for ip, name in addresses}
+        self.pc_box.configure(values=list(self.pc_choices))
+        match = next((label for label, ip in self.pc_choices.items() if ip == current), None)
+        if match:
+            self.pc.set(match)
+        elif current:
+            self.pc.set(current)
+        elif len(addresses) == 1:
+            self.pc.set(next(iter(self.pc_choices)))
+        if error:
+            self.status.set(error)
+        elif not current and len(addresses) > 1:
+            self.status.set("Mehrere PC-Adressen gefunden. Bitte den Adapter zum Telefon auswählen.")
+        elif not addresses:
+            self.status.set("Keine geeignete private IPv4 gefunden. Netzwerk prüfen oder IP manuell eintragen.")
 
     def set_auto(self):
         try:
@@ -168,6 +208,8 @@ class Window:
             pass
 
     def refresh(self):
+        while not self.address_updates.empty():
+            self.receive_addresses(*self.address_updates.get_nowait())
         while not self.events.empty():
             self.status.set(self.events.get_nowait())
         self.root.after(200,self.refresh)
@@ -216,7 +258,7 @@ class Window:
                 protected = windows_secret(token,True)
             if central and not protected:
                 raise ValueError("Bitte den Placetel-API-Schlüssel eintragen.")
-            cfg = validate(dict(self.cfg, profil=selected,zentral=central,api_dpapi=protected,sipuid=self.uid.get().strip(),pc=self.pc.get().strip(), telefon=self.phone.get().strip(),
+            cfg = validate(dict(self.cfg, profil=selected,zentral=central,api_dpapi=protected,sipuid=self.uid.get().strip(),pc=self.pc_choices.get(self.pc.get(),self.pc.get().strip()), telefon=self.phone.get().strip(),
                 nebenstelle=self.ext.get().strip(), schema="http" if self.http.get() else "https",
                 cert=self.cert,key=self.key,nach_annahme=self.after.get(),token=self.cfg.get("token") or secrets.token_hex(24),
                 lokal=self.cfg.get("lokal") or secrets.token_hex(24)))
